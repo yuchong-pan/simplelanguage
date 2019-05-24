@@ -49,6 +49,7 @@ import com.oracle.truffle.sl.SLException;
 import com.oracle.truffle.sl.nodes.SLBinaryNode;
 import com.oracle.truffle.sl.nodes.SLTypes;
 import com.oracle.truffle.sl.runtime.SLBigNumber;
+import com.oracle.truffle.sl.runtime.TaintString;
 
 /**
  * SL node that performs the "+" operation, which performs addition on arbitrary precision numbers,
@@ -99,6 +100,24 @@ public abstract class SLAddNode extends SLBinaryNode {
     @TruffleBoundary
     protected SLBigNumber add(SLBigNumber left, SLBigNumber right) {
         return new SLBigNumber(left.getValue().add(right.getValue()));
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected TaintString add(TaintString left, TaintString right) {
+        return new TaintString(left.getValue() + right.getValue());
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected TaintString add(TaintString left, String right) {
+        return new TaintString(left.getValue() + right);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    protected TaintString add(String left, TaintString right) {
+        return new TaintString(left + right.getValue());
     }
 
     /**

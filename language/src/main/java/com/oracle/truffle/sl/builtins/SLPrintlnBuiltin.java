@@ -46,8 +46,10 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.CachedContext;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.sl.SLException;
 import com.oracle.truffle.sl.SLLanguage;
 import com.oracle.truffle.sl.runtime.SLContext;
+import com.oracle.truffle.sl.runtime.TaintString;
 
 /**
  * Builtin function to write a value to the {@link SLContext#getOutput() standard output}. The
@@ -92,6 +94,11 @@ public abstract class SLPrintlnBuiltin extends SLBuiltinNode {
     @TruffleBoundary
     private static void doPrint(PrintWriter out, String value) {
         out.println(value);
+    }
+
+    @Specialization
+    public void println(TaintString value, @CachedContext(SLLanguage.class) SLContext context) {
+        throw new SLException("Aborting program: cannot write tainted string", this);
     }
 
     @Specialization
